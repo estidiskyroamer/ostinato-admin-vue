@@ -4,13 +4,16 @@ import DashboardView from '@/views/dashboard/DashboardView.vue'
 import LoginView from '@/views/login/LoginView.vue'
 import { useAuth } from '@/composables/useAuth'
 
+const { isAuthenticated } = useAuth();
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
+      redirect: () => {
+        return isAuthenticated() ? '/dashboard' : '/login'
+      },
     },
     {
       path: '/about',
@@ -38,7 +41,6 @@ const router = createRouter({
 // Navigation Guard
 router.beforeEach((to, from, next) => {
   //Authentication guard
-  const { isAuthenticated } = useAuth();
   if (to.meta.requiresAuth && !isAuthenticated()) {
     next("/login"); // Redirect to login if not authenticated
   } else {

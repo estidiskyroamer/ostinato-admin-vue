@@ -17,9 +17,10 @@ export const login = async (email: string, password: string): Promise<boolean> =
         const response = await axiosInstance.post<LoginResponse>('/api/login', { 'email': email, 'password': password, });
         if (response.data.access_token != null) {
             Cookies.set('accessToken', response.data.access_token, { expires: 14 });
-            // localStorage.setItem('accessToken', response.data.access_token);
+            const userFetched = await getMe();
+            return userFetched;
         }
-        return true;
+        return false;
     } catch (error) {
         return false;
         /* if (error instanceof AxiosError) {
