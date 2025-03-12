@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import DashboardView from '@/views/dashboard/DashboardView.vue'
 import LoginView from '@/views/login/LoginView.vue'
 import { useAuth } from '@/composables/useAuth'
+import UserView from '@/views/users/UserView.vue'
 
 const { isAuthenticated } = useAuth();
 
@@ -28,6 +29,12 @@ const router = createRouter({
       name: 'dashboard',
       component: DashboardView,
       meta: { requiresAuth: true, title: 'Ostinato | Dashboard' },
+    },
+    {
+      path: '/users',
+      name: 'users',
+      component: UserView,
+      meta: { requiresAuth: true, title: 'Ostinato | Users' },
     },
     {
       path: '/login',

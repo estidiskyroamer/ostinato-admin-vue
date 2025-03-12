@@ -15,6 +15,7 @@
   "dependencies": {
     "@primevue/forms": "^4.3.1",
     "@tailwindcss/vite": "^4.0.12",
+    "@tanstack/vue-table": "^8.21.2",
     "@vee-validate/zod": "^4.15.0",
     "@vueuse/core": "^12.8.2",
     "axios": "^1.8.2",
@@ -27,6 +28,7 @@
     "tailwindcss-animate": "^1.0.7",
     "vee-validate": "^4.15.0",
     "vue": "^3.5.13",
+    "vue-i18n": "^10.0.6",
     "vue-router": "^4.5.0",
     "zod": "^3.24.2"
   },
