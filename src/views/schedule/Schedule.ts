@@ -1,16 +1,16 @@
 import { Schedule } from "@/interfaces/schedule";
 import { Paginated } from "@/interfaces/common";
 import { getDailySchedulePaginated } from "@/services/schedule-service";
-import { computed, h, onMounted, Ref, ref } from "vue";
+import { computed, h, onMounted, Ref, ref, watch } from "vue";
 import { getCoreRowModel, getPaginationRowModel, useVueTable } from "@tanstack/vue-table";
 import type { ColumnDef } from '@tanstack/table-core';
 import { type DateValue, getLocalTimeZone, today } from '@internationalized/date';
-import { toDate } from "reka-ui/date";
-import { Check, RefreshCw, SquarePen, Trash2, X } from "lucide-vue-next";
-import { Button } from "@/components/ui/button";
+import { Check, CircleCheck, CircleX, RefreshCw, SquarePen, Trash2, Trash2Icon, X } from "lucide-vue-next";
+import Button from "@/components/ui/button/Button.vue";
 
-export function Dashboard() {
+export function Schedule() {
     const currentDate = today(getLocalTimeZone());
+    const currentDateRef = ref(currentDate) as Ref<DateValue>;
     const isLoading = ref(false);
     const scheduleList = ref<Schedule[]>([]);
     const currentPage = ref(1);
@@ -18,7 +18,7 @@ export function Dashboard() {
 
     const getCurrentSchedule = async () => {
         isLoading.value = true;
-        const result = await getDailySchedulePaginated(toDate(currentDate));
+        const result = await getDailySchedulePaginated(new Date(currentDateRef.value.year, currentDateRef.value.month - 1, currentDateRef.value.day));
         if (result && result.data != null) {
             scheduleList.value = result.data;
             totalPages.value = result.last_page;
@@ -30,10 +30,13 @@ export function Dashboard() {
         getCurrentSchedule();
     });
 
+    watch(currentDateRef, () => {
+        getCurrentSchedule();
+    });
 
     const columns: ColumnDef<Schedule>[] = [
         { accessorFn: (row) => `${row.startTime.slice(0, 5)} - ${row.endTime.slice(0, 5)}`, header: 'Time' },
-        { accessorFn: (row) => row.student.name, header: 'Student', },
+        { accessorFn: (row) => `${row.student.name} (${row.instrument.name})`, header: 'Student', },
         { accessorFn: (row) => row.teacher.name, header: 'Teacher' },
         {
             cell: ({ row }) => {
@@ -79,5 +82,5 @@ export function Dashboard() {
         }
     });
 
-    return { table, columns, currentDate, isLoading };
+    return { table, columns, currentDateRef, isLoading };
 }

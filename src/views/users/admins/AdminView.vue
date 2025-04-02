@@ -17,12 +17,12 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { ChevronFirst, ChevronLeft, ChevronRight, ChevronLast, EllipsisVertical } from 'lucide-vue-next'
-import { Student } from './Student';
+import { Admin } from './Admin';
 import PageNavigation from '@/components/PageNavigation.vue';
 import { FlexRender } from "@tanstack/vue-table";
 import { Loader2 } from 'lucide-vue-next'
 
-const { table, columns, isLoading } = Student();
+const { table, columns, isLoading } = Admin();
 </script>
 
 <template>

@@ -17,7 +17,8 @@ import {
 } from '@/components/ui/table';
 import { FlexRender } from "@tanstack/vue-table";
 import { Dashboard } from './Dashboard';
-import { Loader2 } from 'lucide-vue-next'
+import { Loader2 } from 'lucide-vue-next';
+import { toDate } from "reka-ui/date";
 
 const { table, columns, currentDate, isLoading } = Dashboard();
 </script>
@@ -27,7 +28,7 @@ const { table, columns, currentDate, isLoading } = Dashboard();
       <Header />    
       <Card class="w-full">
         <CardHeader>
-            <CardTitle class="text-xl">{{ $d(currentDate, 'short', 'id-ID') }}</CardTitle>
+            <CardTitle class="text-xl">{{ $d(toDate(currentDate), 'short', 'id-ID') }}</CardTitle>
         </CardHeader>
         <CardContent>
           <PageNavigation :table="table" />

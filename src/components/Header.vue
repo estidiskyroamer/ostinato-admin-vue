@@ -56,7 +56,7 @@ onMounted(() => {
                     <NavigationMenuLink as-child><Button variant="ghost" as-child><RouterLink to="/users">Users</RouterLink></Button></NavigationMenuLink>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <NavigationMenuLink><Button variant="ghost">Schedules</Button></NavigationMenuLink>
+                    <NavigationMenuLink as-child><Button variant="ghost" as-child><RouterLink to="/schedules">Schedules</RouterLink></Button></NavigationMenuLink>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                     <NavigationMenuLink><Button variant="ghost">Finance</Button></NavigationMenuLink>

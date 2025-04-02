@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import Header from '@/components/Header.vue';
-import StudentView from './StudentView.vue';
+import StudentView from './students/StudentView.vue';
+import TeacherView from './teachers/TeacherView.vue';
+import AdminView from './admins/AdminView.vue';
 import {
   Card,
   CardContent,
@@ -24,8 +26,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
                     <TabsTrigger value="teachers">Teachers</TabsTrigger>
                     <TabsTrigger value="students">Students</TabsTrigger>
                 </TabsList>
-                <TabsContent value="admins"></TabsContent>
-                <TabsContent value="teachers"></TabsContent>
+                <TabsContent value="admins"><AdminView /></TabsContent>
+                <TabsContent value="teachers"><TeacherView /></TabsContent>
                 <TabsContent value="students"><StudentView /></TabsContent>
             </Tabs>
         </CardContent>

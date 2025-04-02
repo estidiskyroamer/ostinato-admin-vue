@@ -17,4 +17,5 @@ export interface Schedule {
     student: User;
     teacher: User;
     instrument: Instrument;
+    isRescheduled: number;
 }

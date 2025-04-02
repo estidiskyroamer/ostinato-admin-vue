@@ -199,6 +199,19 @@ export const getAdminListPaginated = async (): Promise<Paginated<User[]> | null>
     }
 }
 
+export const getAdminList = async (): Promise<User[] | null> => {
+    try {
+        const response = await axiosInstance.get<ApiResponse<User[]>>('/admin/admins');
+        return response.data.data;
+    } catch (error) {
+        return null;
+        /* if (error instanceof AxiosError) {
+            let err = error.response!.data.error;
+            return error.response!.data;
+        } */
+    }
+}
+
 
 export const addStudent = async ({ name, email, birthDate, address, phoneNumber, password, companyId, gradeId }: {
     name: string;

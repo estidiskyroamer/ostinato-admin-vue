@@ -1,28 +1,28 @@
 import { Paginated } from "@/interfaces/common";
 import { User } from "@/interfaces/user";
-import { getStudentList, getStudentListPaginated } from "@/services/user-service";
+import { getTeacherList, getTeacherListPaginated } from "@/services/user-service";
 import type { ColumnDef } from '@tanstack/table-core';
 import { getCoreRowModel, getPaginationRowModel, useVueTable } from "@tanstack/vue-table";
 import { onMounted, ref } from "vue";
 
-export function Student() {
+export function Teacher() {
     const isLoading = ref(false);
-    const studentList = ref<Paginated<User[]> | null>(null);
-    const students = ref<User[]>([]);
+    const teacherList = ref<Paginated<User[]> | null>(null);
+    const teachers = ref<User[]>([]);
     const currentPage = ref(1);
     const totalPages = ref(1);
 
-    const getStudents = async () => {
+    const getTeachers = async () => {
         isLoading.value = true;
-        const result = await getStudentList();
+        const result = await getTeacherList();
         if (result) {
-            students.value = result;
+            teachers.value = result;
         }
         isLoading.value = false;
     }
 
     onMounted(() => {
-        getStudents();
+        getTeachers();
     });
 
     const columns: ColumnDef<User>[] = [
@@ -35,7 +35,7 @@ export function Student() {
 
     const table = useVueTable({
         columns,
-        data: students,
+        data: teachers,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         initialState: {
