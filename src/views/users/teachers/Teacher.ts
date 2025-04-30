@@ -4,7 +4,10 @@ import { valueUpdater } from "@/lib/utils";
 import { getTeacherList, getTeacherListPaginated } from "@/services/user-service";
 import type { ColumnDef } from '@tanstack/table-core';
 import { ColumnFiltersState, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useVueTable } from "@tanstack/vue-table";
-import { onMounted, ref } from "vue";
+import { h, onMounted, ref } from "vue";
+import TeacherViewCard from "./TeacherViewCard.vue";
+import { SquarePen, Trash2, UserCheck2, UserX2 } from "lucide-vue-next";
+import { Button } from "@/components/ui/button";
 
 export function Teacher() {
   const isLoading = ref(false);
@@ -28,11 +31,34 @@ export function Teacher() {
   });
 
   const columns: ColumnDef<User>[] = [
-    { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'email', header: 'E-mail' },
-    { accessorKey: 'phoneNumber', header: 'Phone Number' },
-    { accessorFn: (row) => row.isActive == 1 ? 'Active' : 'Inactive', header: 'Status' },
-    { accessorKey: 'action', header: '' }
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      cell: ({ row }) =>
+        h(TeacherViewCard, { user: row.original }),
+    },
+    {
+      cell: ({ row }) => {
+        const icons = [];
+        if (row.original.isActive) {
+          icons.push(h(UserCheck2, { class: 'text-green-700' }));
+        }
+        else icons.push(h(UserX2, { class: 'text-red-700' }));
+        return h('div', { class: 'flex items-center' }, icons);
+      }, header: 'Status'
+    },
+    {
+      cell: ({ row }) => {
+        return h('div', { class: 'flex gap-2' }, [
+          h(Button, { variant: "ghost", size: "icon" }, () => [
+            h(SquarePen)
+          ]),
+          h(Button, { variant: "ghost", size: "icon" }, () => [
+            h(Trash2, { class: 'text-red-500' })
+          ]),
+        ])
+      }, header: '', id: 'action'
+    }
   ];
 
   const table = useVueTable({

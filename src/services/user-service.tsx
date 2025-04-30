@@ -2,6 +2,7 @@ import { Admin, Student, Teacher, User } from '@/interfaces/user'
 import axiosInstance from './config'
 import Cookies from 'js-cookie'
 import { ApiResponse, Paginated } from '@/interfaces/common'
+import { AxiosError } from 'axios'
 
 export const addUser = async (userData: User): Promise<User | null> => {
   try {
@@ -312,7 +313,7 @@ export const addStudent = async ({
   password: string
   companyId: string
   gradeId?: string
-}): Promise<Student | null> => {
+}): Promise<ApiResponse<Student | null> | null> => {
   try {
     const response = await axiosInstance.post('/admin/students', {
       name: name,
@@ -325,15 +326,15 @@ export const addStudent = async ({
       isActive: true,
       gradeId: gradeId ?? null,
     })
-    return response.data.data
+    return response.data
   } catch (error) {
     console.log(error)
-    return null
-    /* if (error instanceof AxiosError) {
-            let err = error.response!.data.error;
-            return error.response!.data;
-        } */
+    if (error instanceof AxiosError) {
+      const err = error.response!.data
+      return err
+    }
   }
+  return null
 }
 
 export const updateStudent = async ({

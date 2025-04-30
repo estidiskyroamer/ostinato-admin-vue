@@ -38,12 +38,14 @@ const { table, columns, currentDateRef, isLoading } = Schedule()
       </Card>
       <Card class="flex-1">
         <CardHeader>
-          <CardTitle class="text-xl">Schedules</CardTitle>
+          <CardTitle
+            ><div class="flex items-center justify-between">
+              <h2 class="text-xl font-bold">Schedules</h2>
+              <Button><Plus />New Schedule</Button>
+            </div></CardTitle
+          >
         </CardHeader>
         <CardContent>
-          <div class="flex items-center justify-end py-4">
-            <Button><Plus />New Schedule</Button>
-          </div>
           <PageNavigation :table="table" />
           <Table>
             <TableHeader>
