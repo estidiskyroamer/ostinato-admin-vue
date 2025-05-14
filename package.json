@@ -1,6 +1,6 @@
 {
   "name": "ostinato-admin-vue",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -23,9 +23,10 @@
     "clsx": "^2.1.1",
     "js-cookie": "^3.0.5",
     "lucide-vue-next": "^0.479.0",
-    "reka-ui": "^2.2.0",
+    "reka-ui": "^2.2.1",
     "tailwind-merge": "^3.1.0",
     "tailwindcss-animate": "^1.0.7",
+    "vaul-vue": "^0.4.1",
     "vee-validate": "^4.15.0",
     "vue": "^3.5.13",
     "vue-i18n": "^10.0.6",

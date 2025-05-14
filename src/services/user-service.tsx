@@ -358,9 +358,9 @@ export const updateStudent = async ({
   companyId: string
   isActive: boolean
   gradeId: string
-}): Promise<User | null> => {
+}): Promise<ApiResponse<Student | null> | null> => {
   try {
-    const response = await axiosInstance.put<ApiResponse<User>>(
+    const response = await axiosInstance.put<ApiResponse<Student>>(
       '/admin/students/student/' + studentId,
       {
         name: name,
@@ -373,7 +373,7 @@ export const updateStudent = async ({
         gradeId: gradeId,
       },
     )
-    return response.data.data
+    return response.data
   } catch (error) {
     console.log(error)
     console.log(error)
@@ -385,12 +385,14 @@ export const updateStudent = async ({
   }
 }
 
-export const deleteStudent = async (studentData: User): Promise<User | null> => {
+export const deleteStudent = async (
+  studentData: User,
+): Promise<ApiResponse<Student | null> | null> => {
   try {
-    const response = await axiosInstance.delete<ApiResponse<User>>(
+    const response = await axiosInstance.delete<ApiResponse<Student>>(
       '/admin/students/student/' + studentData.id,
     )
-    return response.data.data
+    return response.data
   } catch (error) {
     console.log(error)
     console.log(error)

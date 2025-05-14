@@ -1,8 +1,6 @@
-import { Admin, Student, Teacher, User } from '@/interfaces/user'
-import axiosInstance from './config'
-import Cookies from 'js-cookie'
 import { ApiResponse, Paginated } from '@/interfaces/common'
 import { Schedule } from '@/interfaces/schedule'
+import axiosInstance from './config'
 
 export const addSchedule = async ({
   studentId,
@@ -20,7 +18,7 @@ export const addSchedule = async ({
   startTime: string
   endTime: string
   repeat: string
-}): Promise<Schedule | null> => {
+}): Promise<ApiResponse<Schedule> | null> => {
   try {
     const response = await axiosInstance.post<ApiResponse<Schedule>>('/admin/schedules/' + repeat, {
       studentId: studentId,
@@ -30,7 +28,7 @@ export const addSchedule = async ({
       startTime: startTime,
       endTime: endTime,
     })
-    return response.data.data
+    return response.data
   } catch (error) {
     console.log(error)
     return null
@@ -59,7 +57,7 @@ export const updateSchedule = async ({
   status: string | null
   startTime: string
   endTime: string
-}): Promise<Schedule | null> => {
+}): Promise<ApiResponse<Schedule> | null> => {
   try {
     const response = await axiosInstance.put<ApiResponse<Schedule>>(
       '/admin/schedules/schedule/' + scheduleId,
@@ -73,7 +71,7 @@ export const updateSchedule = async ({
         endTime: endTime,
       },
     )
-    return response.data.data
+    return response.data
   } catch (error) {
     console.log(error)
     return null
@@ -84,12 +82,14 @@ export const updateSchedule = async ({
   }
 }
 
-export const deleteSchedule = async (scheduleData: Schedule): Promise<Schedule | null> => {
+export const deleteSchedule = async (
+  scheduleData: Schedule,
+): Promise<ApiResponse<Schedule> | null> => {
   try {
     const response = await axiosInstance.delete<ApiResponse<Schedule>>(
       '/admin/schedules/schedule/' + scheduleData.id,
     )
-    return response.data.data
+    return response.data
   } catch (error) {
     console.log(error)
     console.log(error)
@@ -103,7 +103,7 @@ export const deleteSchedule = async (scheduleData: Schedule): Promise<Schedule |
 
 export const getDailySchedulePaginated = async (
   date: Date,
-): Promise<Paginated<Schedule[]> | null> => {
+): Promise<ApiResponse<Paginated<Schedule[]>> | null> => {
   try {
     const response = await axiosInstance.get<ApiResponse<Paginated<Schedule[]>>>(
       '/admin/schedules?year=' +
@@ -114,7 +114,7 @@ export const getDailySchedulePaginated = async (
         date.getDate() +
         '&limit=25',
     )
-    return response.data.data
+    return response.data
   } catch (error) {
     console.log(error)
     return null
@@ -127,12 +127,12 @@ export const getDailySchedulePaginated = async (
 
 export const getStudentSchedulePaginated = async (
   studentId: string,
-): Promise<Schedule[] | null> => {
+): Promise<ApiResponse<Schedule[]> | null> => {
   try {
     const response = await axiosInstance.get<ApiResponse<Schedule[]>>(
       '/admin/students/showSchedule/' + studentId,
     )
-    return response.data.data
+    return response.data
   } catch (error) {
     console.log(error)
     return null

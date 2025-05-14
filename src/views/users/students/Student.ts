@@ -1,20 +1,17 @@
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast/use-toast";
-import { Paginated } from "@/interfaces/common";
+import IconButton from '@/components/IconButton.vue';
 import { User } from "@/interfaces/user";
 import { valueUpdater } from "@/lib/utils";
-import router from "@/router";
-import { getGradeList } from "@/services/grade-service";
-import { addStudent, getStudentList, getStudentListPaginated } from "@/services/user-service";
+import { deleteStudent, getStudentList } from "@/services/user-service";
 import type { ColumnDef } from '@tanstack/table-core';
 import { ColumnFiltersState, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useVueTable } from "@tanstack/vue-table";
 import { toTypedSchema } from "@vee-validate/zod";
-import Cookies from 'js-cookie';
-import { SquarePen, Trash2, UserCheck2, UserX2 } from "lucide-vue-next";
-import { useForm } from "vee-validate";
+import { CalendarDays, SquarePen, Trash2, UserCheck2, UserX2 } from "lucide-vue-next";
 import { h, onMounted, ref } from "vue";
 import * as z from "zod";
 import StudentViewCard from "./StudentViewCard.vue";
+import StudentDialog from "./dialogs/StudentDialog.vue";
+import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import ScheduleDialog from './dialogs/ScheduleDialog.vue';
 
 export const formSchema = toTypedSchema(
   z.object({
@@ -24,23 +21,14 @@ export const formSchema = toTypedSchema(
     address: z.string(),
     phoneNumber: z.string().min(5).max(16),
     gradeId: z.string(),
+    isActive: z.boolean(),
   })
 );
 
 export function Student() {
   const isLoading = ref(false);
-  const isFormLoading = ref(false);
-  const studentList = ref<Paginated<User[]> | null>(null);
-  const grades = ref<Grade[]>([]);
   const students = ref<User[]>([]);
-  const companyId = ref<string | null>(null);
-  const currentPage = ref(1);
-  const totalPages = ref(1);
   const columnFilters = ref<ColumnFiltersState>([]);
-
-  const form = useForm({
-    validationSchema: formSchema,
-  });
 
   const getStudents = async () => {
     isLoading.value = true;
@@ -51,54 +39,8 @@ export function Student() {
     isLoading.value = false;
   }
 
-  const getGrades = async () => {
-    const result = await getGradeList();
-    if (result) {
-      grades.value = result;
-    }
-  }
-
-  const getCompany = () => {
-    const companyCookie = Cookies.get('company');
-    if (companyCookie) {
-      const company = JSON.parse(companyCookie);
-      companyId.value = company.id;
-    }
-  }
-
-  const { toast } = useToast();
-
   onMounted(() => {
     getStudents();
-    getGrades();
-    getCompany();
-  });
-
-  const onSubmit = form.handleSubmit(async (values) => {
-    const payload = { ...values, password: 'default', companyId: companyId.value ?? '' };
-
-    isFormLoading.value = true;
-    const result = await addStudent(payload)
-    isLoading.value = false;
-    console.log(result)
-    if (result) {
-      if (result.success) {
-        toast({
-          description: result.message
-        });
-      } else {
-        toast({
-          description: result.errors ? result.errors.join('\n') : "An error occured",
-          variant: 'destructive'
-        });
-      }
-    }
-    else {
-      toast({
-        description: "An error occured",
-        variant: 'destructive'
-      });
-    }
   });
 
   const columns: ColumnDef<User>[] = [
@@ -107,14 +49,6 @@ export function Student() {
       header: 'Name',
       cell: ({ row }) =>
         h(StudentViewCard, { user: row.original }),
-    },
-    {
-      header: 'Grade',
-      cell: ({ row }) => {
-        const gradeName = row.original.student_grades && row.original.student_grades.length > 0 ? row.original.student_grades[0].grade.name : "-";
-        return h('span', gradeName);
-      },
-      id: 'grade',
     },
     {
       cell: ({ row }) => {
@@ -129,12 +63,22 @@ export function Student() {
     {
       cell: ({ row }) => {
         return h('div', { class: 'flex gap-2' }, [
-          h(Button, { variant: "ghost", size: "icon" }, () => [
-            h(SquarePen)
+          h(ScheduleDialog, { student: row.original }, () => [
+            h(IconButton, { hintText: `View schedule` }, () => [
+              h(CalendarDays)
+            ]),
           ]),
-          h(Button, { variant: "ghost", size: "icon" }, () => [
-            h(Trash2, { class: 'text-red-500' })
+          h(StudentDialog, { isEdit: true, student: row.original, refresh: () => getStudents() }, () => [
+            h(IconButton, { hintText: `Edit ${row.original.name}` }, () => [
+              h(SquarePen, { class: 'text-yellow-500' })
+            ]),
           ]),
+          h(ConfirmDialog, { title: `Are you sure you want to remove ${row.original.name} data?`, actionText: 'Remove', action: () => deleteStudent(row.original), refresh: () => getStudents() }, () => [
+            h(IconButton, { hintText: `Remove ${row.original.name}` }, () => [
+              h(Trash2, { class: 'text-red-500' })
+            ]),
+          ]),
+
         ])
       }, header: '', id: 'action'
     }
@@ -157,5 +101,5 @@ export function Student() {
     }
   });
 
-  return { table, columns, form, grades, onSubmit, isLoading };
+  return { table, isLoading, getStudents };
 }
