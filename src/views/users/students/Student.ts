@@ -11,7 +11,7 @@ import * as z from "zod";
 import StudentViewCard from "./StudentViewCard.vue";
 import StudentDialog from "./dialogs/StudentDialog.vue";
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
-import ScheduleDialog from './dialogs/ScheduleDialog.vue';
+import ScheduleDrawer from './dialogs/ScheduleDrawer.vue';
 
 export const formSchema = toTypedSchema(
   z.object({
@@ -20,8 +20,7 @@ export const formSchema = toTypedSchema(
     birthDate: z.string(),
     address: z.string(),
     phoneNumber: z.string().min(5).max(16),
-    gradeId: z.string(),
-    isActive: z.boolean(),
+    isActive: z.boolean().default(false),
   })
 );
 
@@ -63,7 +62,7 @@ export function Student() {
     {
       cell: ({ row }) => {
         return h('div', { class: 'flex gap-2' }, [
-          h(ScheduleDialog, { student: row.original }, () => [
+          h(ScheduleDrawer, { student: row.original }, () => [
             h(IconButton, { hintText: `View schedule` }, () => [
               h(CalendarDays)
             ]),

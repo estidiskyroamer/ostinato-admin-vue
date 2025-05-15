@@ -40,7 +40,6 @@ const form = useForm({
   validationSchema: formSchema,
 })
 const isLoading = ref(false)
-const isFormLoading = ref(false)
 
 const companyId = ref<string | null>(null)
 
@@ -59,24 +58,26 @@ const onSubmit = form.handleSubmit(async (values) => {
     companyId: companyId.value ?? '',
   }
 
-  isFormLoading.value = true
+  isLoading.value = true
   const result = props.isEdit ? await updateStudent(payload) : await addStudent(payload)
   isLoading.value = false
+
   if (result) {
     if (result.success) {
       toast({
         description: result.message,
       })
       if (props.refresh) props.refresh()
+      isDialogOpen.value = false // Close dialog on success
     } else {
       toast({
-        description: result.errors ? result.errors.join('\n') : 'An error occured',
+        description: result.errors ? result.errors.join('\n') : 'An error occurred',
         variant: 'destructive',
       })
     }
   } else {
     toast({
-      description: 'An error occured',
+      description: 'An error occurred',
       variant: 'destructive',
     })
   }
@@ -105,11 +106,15 @@ const onDialogOpen = () => {
       birthDate: props.student.birthDate ?? '',
       address: props.student.address ?? '',
       phoneNumber: props.student.phoneNumber ?? '',
-      gradeId: props.student.student_grades?.[0]?.grade.id ?? '',
       isActive: props.student.isActive === 1 ? true : false,
     })
   } else {
     form.setValues({
+      name: '',
+      email: '',
+      birthDate: '',
+      address: '',
+      phoneNumber: '',
       isActive: props.isEdit ? false : true,
     })
   }
@@ -123,7 +128,11 @@ const onDialogOpen = () => {
     </DialogTrigger>
     <DialogContent>
       <form @submit="onSubmit" class="flex flex-col gap-4">
-        <DialogHeader><DialogTitle>New Student</DialogTitle></DialogHeader>
+        <DialogHeader
+          ><DialogTitle>{{
+            props.isEdit ? 'Update Student' : 'New Student'
+          }}</DialogTitle></DialogHeader
+        >
         <div class="flex flex-col gap-8">
           <FormField v-slot="{ componentField }" name="name">
             <FormItem>
@@ -219,22 +228,22 @@ const onDialogOpen = () => {
               <FormMessage />
             </FormItem>
           </FormField>
-          <FormField v-slot="{ value, handleChange }" type="checkbox" name="isActive">
+          <FormField v-slot="{ componentField }" type="checkbox" name="isActive">
             <FormItem>
               <FormControl class="mr-4">
-                <Checkbox :model-value="value" @update:model-value="handleChange" />
+                <Checkbox v-bind="componentField" />
               </FormControl>
               <FormLabel>Active</FormLabel>
             </FormItem>
           </FormField>
         </div>
         <DialogFooter>
-          <DialogClose as-child
-            ><Button type="submit" :disabled="isLoading">
+          <DialogClose as-child>
+            <Button type="submit" :disabled="isLoading">
               <Loader2 v-if="isLoading" class="w-4 h-4 mr-2 animate-spin" />
               {{ props.isEdit ? 'Update Student' : 'Add Student' }}
-            </Button></DialogClose
-          >
+            </Button>
+          </DialogClose>
         </DialogFooter>
       </form>
     </DialogContent>
