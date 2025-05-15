@@ -16,8 +16,9 @@ import { Loader2 } from 'lucide-vue-next'
 import { FlexRender } from '@tanstack/vue-table'
 import { Calendar } from '@/components/ui/calendar'
 import { Schedule } from './Schedule'
+import ScheduleDialog from './dialogs/ScheduleDialog.vue'
 
-const { table, columns, currentDateRef, isLoading } = Schedule()
+const { table, currentDateRef, isLoading, getCurrentSchedule } = Schedule()
 </script>
 
 <template>
@@ -26,14 +27,7 @@ const { table, columns, currentDateRef, isLoading } = Schedule()
     <div class="flex flex-row gap-4 w-full">
       <Card class="flex-4">
         <CardContent>
-          <Calendar
-            v-model="currentDateRef"
-            @update:model-value="
-              (v) => {
-                console.log(v)
-              }
-            "
-          />
+          <Calendar v-model="currentDateRef" />
         </CardContent>
       </Card>
       <Card class="flex-1">
@@ -41,7 +35,9 @@ const { table, columns, currentDateRef, isLoading } = Schedule()
           <CardTitle
             ><div class="flex items-center justify-between">
               <h2 class="text-xl font-bold">Schedules</h2>
-              <Button><Plus />New Schedule</Button>
+              <ScheduleDialog :refresh="getCurrentSchedule">
+                <Button><Plus />New Schedule</Button>
+              </ScheduleDialog>
             </div></CardTitle
           >
         </CardHeader>
