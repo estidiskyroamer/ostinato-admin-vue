@@ -17,16 +17,17 @@ export const addSchedule = async ({
   date: string
   startTime: string
   endTime: string
-  repeat: string
+  repeat: string | null
 }): Promise<ApiResponse<Schedule> | null> => {
+  repeat = repeat ?? '1'
   try {
     const response = await axiosInstance.post<ApiResponse<Schedule>>('/admin/schedules/' + repeat, {
       studentId: studentId,
       teacherId: teacherId,
       instrumentId: instrumentId,
       date: date,
-      startTime: startTime,
-      endTime: endTime,
+      startTime: startTime.slice(0, 5),
+      endTime: endTime.slice(0, 5),
     })
     return response.data
   } catch (error) {
@@ -67,8 +68,8 @@ export const updateSchedule = async ({
         instrumentId: instrumentId,
         date: date,
         status: status,
-        startTime: startTime,
-        endTime: endTime,
+        startTime: startTime.slice(0, 5),
+        endTime: endTime.slice(0, 5),
       },
     )
     return response.data

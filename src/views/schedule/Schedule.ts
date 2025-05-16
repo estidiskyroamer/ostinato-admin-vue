@@ -1,12 +1,18 @@
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import IconButton from '@/components/IconButton.vue';
+import StatusIcon from '@/components/StatusIcon.vue';
+import { Instrument } from '@/interfaces/instrument';
 import { Schedule } from "@/interfaces/schedule";
+import { User } from '@/interfaces/user';
+import { getInstrumentList } from '@/services/instrument-service';
 import { deleteSchedule, getDailySchedulePaginated } from "@/services/schedule-service";
+import { getStudentList, getTeacherList } from '@/services/user-service';
 import { type DateValue, getLocalTimeZone, today } from '@internationalized/date';
 import type { ColumnDef } from '@tanstack/table-core';
 import { getCoreRowModel, getPaginationRowModel, useVueTable } from "@tanstack/vue-table";
 import { toTypedSchema } from "@vee-validate/zod";
-import { Check, RefreshCw, SquarePen, Trash2, X } from "lucide-vue-next";
+import { useDebounceFn } from '@vueuse/core';
+import { SquarePen, Trash2 } from "lucide-vue-next";
 import { h, onMounted, Ref, ref, watch } from "vue";
 import { z } from "zod";
 import ScheduleDialog from './dialogs/ScheduleDialog.vue';
@@ -19,8 +25,8 @@ export const formSchema = toTypedSchema(
     date: z.string(),
     startTime: z.string(),
     endTime: z.string(),
-    status: z.string().nullable(),
-    repeat: z.number(),
+    status: z.string().optional().nullable(),
+    repeat: z.number().optional().nullable(),
   })
 );
 
@@ -28,9 +34,13 @@ export function Schedule() {
   const currentDate = today(getLocalTimeZone());
   const currentDateRef = ref(currentDate) as Ref<DateValue>;
   const isLoading = ref(false);
+  const isFormDataLoading = ref(false);
   const scheduleList = ref<Schedule[]>([]);
-  const currentPage = ref(1);
   const totalPages = ref(1);
+
+  const teachers = ref<User[]>([])
+  const students = ref<User[]>([])
+  const instruments = ref<Instrument[]>([])
 
   const getCurrentSchedule = async () => {
     isLoading.value = true;
@@ -38,17 +48,52 @@ export function Schedule() {
     if (result && result.data != null) {
       scheduleList.value = result.data.data;
       totalPages.value = result.data.last_page;
+      isLoading.value = false;
     }
-    isLoading.value = false;
+  }
+
+  const getStudents = async () => {
+    const result = await getStudentList()
+    if (result) {
+      students.value = result
+    }
+  }
+
+  const getTeachers = async () => {
+    const result = await getTeacherList()
+    if (result) {
+      teachers.value = result
+    }
+  }
+
+  const getInstruments = async () => {
+    const result = await getInstrumentList()
+    if (result) {
+      instruments.value = result
+    }
+  }
+
+  const fetchFormData = async () => {
+    isFormDataLoading.value = true;
+    try {
+      await Promise.all([
+        getStudents(),
+        getTeachers(),
+        getInstruments(),])
+    } catch (error) {
+      console.error('Error loading data:', error)
+    } finally {
+      isFormDataLoading.value = false;
+    }
   }
 
   onMounted(() => {
     getCurrentSchedule();
+    fetchFormData();
   });
 
-  watch(currentDateRef, () => {
-    getCurrentSchedule();
-  });
+  const debouncedFetch = useDebounceFn(getCurrentSchedule, 300);
+  watch(currentDateRef, debouncedFetch);
 
   const columns: ColumnDef<Schedule>[] = [
     { accessorFn: (row) => `${row.startTime.slice(0, 5)} - ${row.endTime.slice(0, 5)}`, header: 'Time' },
@@ -56,26 +101,13 @@ export function Schedule() {
     { accessorFn: (row) => row.teacher.name, header: 'Teacher' },
     {
       cell: ({ row }) => {
-        const icons = [];
-        if (row.original.isRescheduled === 1) {
-          icons.push(h(RefreshCw, { class: 'text-yellow-700' }));
-        }
-
-        switch (row.original.status) {
-          case 'done':
-            icons.push(h(Check, { class: 'text-green-700' })); break;
-          case 'canceled':
-            icons.push(h(X, { class: 'text-red-700' })); break;
-          default:
-            icons.push(''); break;
-        }
-        return h('div', { class: 'flex items-center' }, icons);
+        return h('div', { class: 'flex items-center' }, [h(StatusIcon, { isRescheduled: row.original.isRescheduled, status: row.original.status })]);
       }, header: 'Status'
     },
     {
       cell: ({ row }) => {
         return h('div', { class: 'flex gap-2' }, [
-          h(ScheduleDialog, { isEdit: true, schedule: row.original, refresh: () => getCurrentSchedule() }, () => [
+          h(ScheduleDialog, { isEdit: true, schedule: row.original, refresh: () => fetchFormData(), disabled: isFormDataLoading.value }, () => [
             h(IconButton, { hintText: `Edit schedule` }, () => [
               h(SquarePen, { class: 'text-yellow-500' })
             ]),
@@ -106,5 +138,5 @@ export function Schedule() {
     }
   });
 
-  return { table, currentDateRef, isLoading, getCurrentSchedule };
+  return { teachers, students, instruments, table, currentDateRef, isLoading, isFormDataLoading, getCurrentSchedule };
 }

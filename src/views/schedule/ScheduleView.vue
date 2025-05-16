@@ -17,8 +17,21 @@ import { FlexRender } from '@tanstack/vue-table'
 import { Calendar } from '@/components/ui/calendar'
 import { Schedule } from './Schedule'
 import ScheduleDialog from './dialogs/ScheduleDialog.vue'
+import { provide } from 'vue'
 
-const { table, currentDateRef, isLoading, getCurrentSchedule } = Schedule()
+const {
+  teachers,
+  students,
+  instruments,
+  table,
+  currentDateRef,
+  isLoading,
+  isFormDataLoading,
+  getCurrentSchedule,
+} = Schedule()
+provide('teachers', teachers)
+provide('students', students)
+provide('instruments', instruments)
 </script>
 
 <template>
@@ -35,8 +48,8 @@ const { table, currentDateRef, isLoading, getCurrentSchedule } = Schedule()
           <CardTitle
             ><div class="flex items-center justify-between">
               <h2 class="text-xl font-bold">Schedules</h2>
-              <ScheduleDialog :refresh="getCurrentSchedule">
-                <Button><Plus />New Schedule</Button>
+              <ScheduleDialog :refresh="getCurrentSchedule" :disabled="isFormDataLoading">
+                <Button :disabled="isFormDataLoading"><Plus />New Schedule</Button>
               </ScheduleDialog>
             </div></CardTitle
           >

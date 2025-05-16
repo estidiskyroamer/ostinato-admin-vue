@@ -15,46 +15,49 @@ import {
 } from '@/components/ui/combobox'
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select'
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from '@/components/ui/toast/use-toast'
+import { Instrument } from '@/interfaces/instrument'
 import { Schedule } from '@/interfaces/schedule'
 import { User } from '@/interfaces/user'
-import { DEFAULT_PASSWORD, scheduleStatuses } from '@/services/constants'
-import { addStudent, getStudentList, getTeacherList, updateStudent } from '@/services/user-service'
-import { getLocalTimeZone, today } from '@internationalized/date'
-import { Check, ChevronsUpDown, Loader2 } from 'lucide-vue-next'
-import { useForm } from 'vee-validate'
-import { ref, watch } from 'vue'
-import { formSchema } from '../Schedule'
+import { scheduleStatuses } from '@/services/constants'
 import { addSchedule, updateSchedule } from '@/services/schedule-service'
-import { getInstrumentList } from '@/services/instrument-service'
-import { Instrument } from '@/interfaces/instrument'
+import { getLocalTimeZone, today } from '@internationalized/date'
+import { ChevronsUpDown, Loader2 } from 'lucide-vue-next'
+import { useForm } from 'vee-validate'
+import { inject, Ref, ref, watch } from 'vue'
+import { formSchema } from '../Schedule'
+
+const teachers = inject<Ref<User[]>>('teachers')
+const students = inject<Ref<User[]>>('students')
+const instruments = inject<Ref<Instrument[]>>('instruments')
 
 const props = withDefaults(
   defineProps<{
     isEdit?: boolean
     schedule?: Schedule
     refresh?: () => void
+    disabled?: boolean
   }>(),
   {
     isEdit: false,
+    disabled: false,
   },
 )
 
@@ -68,12 +71,12 @@ const isLoading = ref(false)
 const isFormLoading = ref(false)
 const repeatChecked = ref(false)
 
-const teachers = ref<User[]>([])
-const students = ref<User[]>([])
-const instruments = ref<Instrument[]>([])
+const selectedStudent = ref<User | null>(null)
+const selectedTeacher = ref<User | null>(null)
+const selectedInstrument = ref<Instrument | null>(null)
 
 const onSubmit = form.handleSubmit(async (values) => {
-  console.log(values)
+  console.log('values', values)
   let scheduleId = ''
 
   if (props.isEdit) {
@@ -82,19 +85,20 @@ const onSubmit = form.handleSubmit(async (values) => {
   const payload = {
     ...values,
     scheduleId: scheduleId,
-    status: form.values.status,
-    repeat: values.repeat.toString(),
+    status: form.values.status ?? null,
+    repeat: values.repeat ? values.repeat.toString() : null,
   }
 
   isFormLoading.value = true
   isLoading.value = true
-  const result = await addSchedule(payload)
+  const result = props.isEdit ? await updateSchedule(payload) : await addSchedule(payload)
   isLoading.value = false
   if (result) {
     if (result.success) {
       toast({
         description: result.message,
       })
+      isDialogOpen.value = false
       if (props.refresh) props.refresh()
     } else {
       toast({
@@ -110,60 +114,56 @@ const onSubmit = form.handleSubmit(async (values) => {
   }
 })
 
-const getStudents = async () => {
-  isLoading.value = true
-  const result = await getStudentList()
-  if (result) {
-    students.value = result
-  }
-  isLoading.value = false
-}
-
-const getTeachers = async () => {
-  isLoading.value = true
-  const result = await getTeacherList()
-  if (result) {
-    teachers.value = result
-  }
-  isLoading.value = false
-}
-
-const getInstruments = async () => {
-  isLoading.value = true
-  const result = await getInstrumentList()
-  if (result) {
-    instruments.value = result
-  }
-  isLoading.value = false
-}
-
 const isDialogOpen = ref(false)
 watch(isDialogOpen, (newValue) => {
   if (newValue) {
     onDialogOpen()
+  } else {
+    selectedStudent.value = null
+    selectedTeacher.value = null
+    selectedInstrument.value = null
+    form.resetForm()
   }
 })
-const onDialogOpen = () => {
-  getStudents()
-  getTeachers()
-  getInstruments()
-
-  if (props.schedule) {
-    form.setValues({
-      teacherId: props.schedule.teacherId,
-      studentId: props.schedule.studentId,
-      instrumentId: props.schedule.instrumentId,
-      date: props.schedule.date,
-      startTime: props.schedule.startTime,
-      endTime: props.schedule.endTime,
+const onDialogOpen = async () => {
+  isLoading.value = true
+  try {
+    if (props.schedule) {
+      form.setValues({
+        teacherId: props.schedule.teacherId,
+        studentId: props.schedule.studentId,
+        instrumentId: props.schedule.instrumentId,
+        date: props.schedule.date,
+        startTime: props.schedule.startTime,
+        endTime: props.schedule.endTime,
+        status: props.schedule.status || null,
+      })
+      selectedStudent.value =
+        students!.value.find((s) => s.id === props.schedule?.studentId) || null
+      selectedTeacher.value =
+        teachers!.value.find((t) => t.id === props.schedule?.teacherId) || null
+      selectedInstrument.value =
+        instruments!.value.find((i) => i.id === props.schedule?.instrumentId) || null
+    } else {
+      form.resetForm()
+      form.setFieldValue('repeat', 1)
+      repeatChecked.value = false
+    }
+  } catch (error) {
+    console.error('Error loading data:', error)
+    toast({
+      description: 'Failed to load necessary data',
+      variant: 'destructive',
     })
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
 
 <template>
   <Dialog v-model:open="isDialogOpen">
-    <DialogTrigger>
+    <DialogTrigger :disabled="disabled">
       <slot />
     </DialogTrigger>
     <DialogContent>
@@ -177,7 +177,7 @@ const onDialogOpen = () => {
           <FormField name="studentId">
             <FormItem>
               <FormLabel>Student</FormLabel>
-              <Combobox by="name">
+              <Combobox v-model="selectedStudent" by="id" :disabled="isLoading">
                 <FormControl>
                   <ComboboxAnchor>
                     <div class="relative w-full items-center">
@@ -209,7 +209,6 @@ const onDialogOpen = () => {
                       "
                     >
                       {{ student.name }}
-
                       <ComboboxItemIndicator> </ComboboxItemIndicator>
                     </ComboboxItem>
                   </ComboboxGroup>
@@ -221,7 +220,7 @@ const onDialogOpen = () => {
           <FormField name="teacherId">
             <FormItem>
               <FormLabel>Teacher</FormLabel>
-              <Combobox by="label">
+              <Combobox v-model="selectedTeacher" by="id" :disabled="isLoading">
                 <FormControl>
                   <ComboboxAnchor>
                     <div class="relative w-full items-center">
@@ -265,7 +264,7 @@ const onDialogOpen = () => {
           <FormField name="instrumentId">
             <FormItem>
               <FormLabel>Instrument</FormLabel>
-              <Combobox by="label">
+              <Combobox v-model="selectedInstrument" by="id" :disabled="isLoading">
                 <FormControl>
                   <ComboboxAnchor>
                     <div class="relative w-full items-center">
@@ -318,6 +317,7 @@ const onDialogOpen = () => {
                       placeholder="Start date"
                       v-bind="componentField"
                       required
+                      :disabled="isLoading"
                     />
                   </FormControl>
                 </PopoverTrigger>
@@ -346,7 +346,13 @@ const onDialogOpen = () => {
               <FormItem class="flex-1">
                 <FormLabel>Start time</FormLabel>
                 <FormControl>
-                  <Input id="address" type="time" v-bind="componentField" required />
+                  <Input
+                    id="address"
+                    type="time"
+                    v-bind="componentField"
+                    required
+                    :disabled="isLoading"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -355,13 +361,19 @@ const onDialogOpen = () => {
               <FormItem class="flex-1">
                 <FormLabel>End time</FormLabel>
                 <FormControl>
-                  <Input id="address" type="time" v-bind="componentField" required />
+                  <Input
+                    id="address"
+                    type="time"
+                    v-bind="componentField"
+                    required
+                    :disabled="isLoading"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             </FormField>
           </div>
-          <div class="flex flex-row gap-2">
+          <div class="flex flex-row gap-2" v-if="!props.isEdit">
             <FormField type="checkbox" name="repeatCheck">
               <FormItem>
                 <FormControl class="mr-4">
@@ -387,33 +399,28 @@ const onDialogOpen = () => {
               </FormItem>
             </FormField>
           </div>
-          <FormField v-slot="{ componentField }" name="status">
+          <FormField v-slot="{ componentField }" name="status" v-if="props.isEdit">
             <FormItem class="flex flex-col">
               <FormLabel>Status</FormLabel>
-              <Select v-bind="componentField">
+              <Select v-bind="componentField" :disabled="isLoading">
                 <SelectTrigger class="w-full">
                   <SelectValue placeholder="Select Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem
-                    v-for="status in scheduleStatuses"
-                    :key="status ?? 'none'"
-                    :value="status"
-                    >{{ status ?? 'None' }}</SelectItem
-                  >
+                  <SelectItem v-for="status in scheduleStatuses" :key="status" :value="status">{{
+                    status
+                  }}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
             </FormItem>
           </FormField>
         </div>
-        <DialogFooter
-          ><DialogClose as-child>
-            <Button type="submit" :disabled="isLoading">
-              <Loader2 v-if="isLoading" class="w-4 h-4 mr-2 animate-spin" />
-              {{ props.isEdit ? 'Update Schedule' : 'Add Schedule' }}
-            </Button>
-          </DialogClose>
+        <DialogFooter>
+          <Button type="submit" :disabled="isLoading">
+            <Loader2 v-if="isLoading" class="w-4 h-4 mr-2 animate-spin" />
+            {{ props.isEdit ? 'Update Schedule' : 'Add Schedule' }}
+          </Button>
         </DialogFooter>
       </form>
     </DialogContent>

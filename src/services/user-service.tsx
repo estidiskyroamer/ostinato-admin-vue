@@ -346,7 +346,6 @@ export const updateStudent = async ({
   password,
   companyId,
   isActive,
-  gradeId,
 }: {
   studentId: string
   name: string
@@ -357,7 +356,6 @@ export const updateStudent = async ({
   password: string
   companyId: string
   isActive: boolean
-  gradeId: string
 }): Promise<ApiResponse<Student | null> | null> => {
   try {
     const response = await axiosInstance.put<ApiResponse<Student>>(
@@ -370,7 +368,6 @@ export const updateStudent = async ({
         password: password,
         companyId: companyId,
         isActive: isActive,
-        gradeId: gradeId,
       },
     )
     return response.data
