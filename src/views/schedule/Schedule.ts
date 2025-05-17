@@ -8,14 +8,15 @@ import { getInstrumentList } from '@/services/instrument-service';
 import { deleteSchedule, getDailySchedulePaginated } from "@/services/schedule-service";
 import { getStudentList, getTeacherList } from '@/services/user-service';
 import { type DateValue, getLocalTimeZone, today } from '@internationalized/date';
-import type { ColumnDef } from '@tanstack/table-core';
-import { getCoreRowModel, getPaginationRowModel, useVueTable } from "@tanstack/vue-table";
+import type { ColumnDef, ColumnFiltersState } from '@tanstack/table-core';
+import { getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useVueTable } from "@tanstack/vue-table";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useDebounceFn } from '@vueuse/core';
 import { SquarePen, Trash2 } from "lucide-vue-next";
 import { h, onMounted, Ref, ref, watch } from "vue";
 import { z } from "zod";
 import ScheduleDialog from './dialogs/ScheduleDialog.vue';
+import { valueUpdater } from '@/lib/utils';
 
 export const formSchema = toTypedSchema(
   z.object({
@@ -37,6 +38,7 @@ export function Schedule() {
   const isFormDataLoading = ref(false);
   const scheduleList = ref<Schedule[]>([]);
   const totalPages = ref(1);
+  const columnFilters = ref<ColumnFiltersState>([]);
 
   const teachers = ref<User[]>([])
   const students = ref<User[]>([])
@@ -97,8 +99,8 @@ export function Schedule() {
 
   const columns: ColumnDef<Schedule>[] = [
     { accessorFn: (row) => `${row.startTime.slice(0, 5)} - ${row.endTime.slice(0, 5)}`, header: 'Time' },
-    { accessorFn: (row) => `${row.student.name} (${row.instrument.name})`, header: 'Student', },
-    { accessorFn: (row) => row.teacher.name, header: 'Teacher' },
+    { accessorFn: (row) => `${row.student.name} (${row.instrument.name})`, id: 'student', header: 'Student', },
+    { accessorFn: (row) => row.teacher.name, id: 'teacher', header: 'Teacher' },
     {
       cell: ({ row }) => {
         return h('div', { class: 'flex items-center' }, [h(StatusIcon, { isRescheduled: row.original.isRescheduled, status: row.original.status })]);
@@ -107,7 +109,7 @@ export function Schedule() {
     {
       cell: ({ row }) => {
         return h('div', { class: 'flex gap-2' }, [
-          h(ScheduleDialog, { isEdit: true, schedule: row.original, refresh: () => fetchFormData(), disabled: isFormDataLoading.value }, () => [
+          h(ScheduleDialog, { isEdit: true, schedule: row.original, refresh: () => getCurrentSchedule(), disabled: isFormDataLoading.value }, () => [
             h(IconButton, { hintText: `Edit schedule` }, () => [
               h(SquarePen, { class: 'text-yellow-500' })
             ]),
@@ -131,6 +133,11 @@ export function Schedule() {
     data: scheduleList,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnFiltersChange: updaterOrValue => valueUpdater(updaterOrValue, columnFilters),
+    state: {
+      get columnFilters() { return columnFilters.value },
+    },
     initialState: {
       pagination: {
         pageSize: 15

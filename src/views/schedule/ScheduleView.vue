@@ -10,7 +10,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Plus } from 'lucide-vue-next'
-import Button from '@/components/ui/button/Button.vue'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import PageNavigation from '@/components/PageNavigation.vue'
 import { Loader2 } from 'lucide-vue-next'
 import { FlexRender } from '@tanstack/vue-table'
@@ -48,13 +49,21 @@ provide('instruments', instruments)
           <CardTitle
             ><div class="flex items-center justify-between">
               <h2 class="text-xl font-bold">Schedules</h2>
-              <ScheduleDialog :refresh="getCurrentSchedule" :disabled="isFormDataLoading">
-                <Button :disabled="isFormDataLoading"><Plus />New Schedule</Button>
-              </ScheduleDialog>
             </div></CardTitle
           >
         </CardHeader>
         <CardContent>
+          <div class="flex items-center justify-between py-4">
+            <Input
+              class="w-1/4"
+              placeholder="Find by student name..."
+              :model-value="table.getColumn('student')?.getFilterValue() as string"
+              @update:model-value="table.getColumn('student')?.setFilterValue($event)"
+            />
+            <ScheduleDialog :refresh="getCurrentSchedule" :disabled="isFormDataLoading">
+              <Button :disabled="isFormDataLoading"><Plus />New Schedule</Button>
+            </ScheduleDialog>
+          </div>
           <PageNavigation :table="table" />
           <Table>
             <TableHeader>
