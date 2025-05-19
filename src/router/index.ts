@@ -5,6 +5,7 @@ import LoginView from '@/views/login/LoginView.vue'
 import { useAuth } from '@/composables/useAuth'
 import UserView from '@/views/users/UserView.vue'
 import ScheduleView from '@/views/schedule/ScheduleView.vue'
+import ScheduleTimeTableView from '@/views/schedule/views/ScheduleTableView.vue'
 
 const { isAuthenticated } = useAuth();
 
@@ -41,6 +42,12 @@ const router = createRouter({
       path: '/schedules',
       name: 'schedules',
       component: ScheduleView,
+      meta: { requiresAuth: true, title: 'Ostinato | Schedules' },
+    },
+    {
+      path: '/schedulestest',
+      name: 'schedulestest',
+      component: ScheduleTimeTableView,
       meta: { requiresAuth: true, title: 'Ostinato | Schedules' },
     },
     {

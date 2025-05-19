@@ -61,6 +61,8 @@ const props = withDefaults(
   },
 )
 
+console.log(props.schedule)
+
 const form = useForm({
   validationSchema: formSchema,
   initialValues: {
@@ -163,7 +165,7 @@ const onDialogOpen = async () => {
 
 <template>
   <Dialog v-model:open="isDialogOpen">
-    <DialogTrigger :disabled="disabled">
+    <DialogTrigger asChild :disabled="disabled">
       <slot />
     </DialogTrigger>
     <DialogContent>

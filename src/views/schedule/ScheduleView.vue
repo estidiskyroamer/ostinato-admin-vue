@@ -1,30 +1,20 @@
 <script setup lang="ts">
 import Header from '@/components/Header.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Plus } from 'lucide-vue-next'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import PageNavigation from '@/components/PageNavigation.vue'
-import { Loader2 } from 'lucide-vue-next'
-import { FlexRender } from '@tanstack/vue-table'
+
 import { Calendar } from '@/components/ui/calendar'
-import { Schedule } from './Schedule'
-import ScheduleDialog from './dialogs/ScheduleDialog.vue'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { provide } from 'vue'
+import { Schedule } from './Schedule'
+import ScheduleListView from './views/ScheduleListView.vue'
+import ScheduleTableView from './views/ScheduleTableView.vue'
 
 const {
   teachers,
   students,
   instruments,
   table,
+  scheduleList,
   currentDateRef,
   isLoading,
   isFormDataLoading,
@@ -39,11 +29,13 @@ provide('instruments', instruments)
   <main class="flex flex-col h-screen w-full items-center">
     <Header />
     <div class="flex flex-row gap-4 w-full">
-      <Card class="flex-4">
-        <CardContent>
-          <Calendar v-model="currentDateRef" />
-        </CardContent>
-      </Card>
+      <div class="flex-4 flex-col">
+        <Card>
+          <CardContent>
+            <Calendar v-model="currentDateRef" />
+          </CardContent>
+        </Card>
+      </div>
       <Card class="flex-1">
         <CardHeader>
           <CardTitle
@@ -53,45 +45,29 @@ provide('instruments', instruments)
           >
         </CardHeader>
         <CardContent>
-          <div class="flex items-center justify-between py-4">
-            <Input
-              class="w-1/4"
-              placeholder="Find by student name..."
-              :model-value="table.getColumn('student')?.getFilterValue() as string"
-              @update:model-value="table.getColumn('student')?.setFilterValue($event)"
-            />
-            <ScheduleDialog :refresh="getCurrentSchedule" :disabled="isFormDataLoading">
-              <Button :disabled="isFormDataLoading"><Plus />New Schedule</Button>
-            </ScheduleDialog>
-          </div>
-          <PageNavigation :table="table" />
-          <Table>
-            <TableHeader>
-              <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-                <TableHead v-for="header in headerGroup.headers" :key="header.id"
-                  ><FlexRender
-                    :render="header.column.columnDef.header"
-                    :props="header.getContext()"
-                /></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <template v-if="isLoading">
-                <TableRow>
-                  <TableCell colSpan="{columns.length}" class="items-center justify-center"
-                    ><Loader2 class="w-4 h-4 mr-2 animate-spin"
-                  /></TableCell>
-                </TableRow>
-              </template>
-              <template v-else>
-                <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
-                  <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id"
-                    ><FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()"
-                  /></TableCell>
-                </TableRow>
-              </template>
-            </TableBody>
-          </Table>
+          <Tabs default-value="list">
+            <TabsList>
+              <TabsTrigger value="list">List</TabsTrigger>
+              <TabsTrigger value="timetable">Timetable</TabsTrigger>
+            </TabsList>
+            <TabsContent value="list"
+              ><ScheduleListView
+                :table="table"
+                :refresh="getCurrentSchedule"
+                :is-form-data-loading="isFormDataLoading"
+                :is-loading="isLoading"
+            /></TabsContent>
+            <TabsContent value="timetable"
+              ><ScheduleTableView
+                :teacher-data="teachers"
+                :schedule-data="scheduleList"
+                :start-time="'08:00'"
+                :end-time="'21:00'"
+                :refresh="getCurrentSchedule"
+                :is-form-data-loading="isFormDataLoading"
+                :is-loading="isLoading"
+            /></TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>

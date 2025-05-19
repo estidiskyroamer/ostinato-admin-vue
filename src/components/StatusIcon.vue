@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { Check, X, RefreshCw } from 'lucide-vue-next'
 
-const props = defineProps<{
+defineProps<{
   status?: string
   isRescheduled?: number
 }>()
-console.log(props)
 </script>
 
 <template>

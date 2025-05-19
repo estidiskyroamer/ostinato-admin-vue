@@ -145,5 +145,5 @@ export function Schedule() {
     }
   });
 
-  return { teachers, students, instruments, table, currentDateRef, isLoading, isFormDataLoading, getCurrentSchedule };
+  return { teachers, students, instruments, table, scheduleList, currentDateRef, isLoading, isFormDataLoading, getCurrentSchedule };
 }
