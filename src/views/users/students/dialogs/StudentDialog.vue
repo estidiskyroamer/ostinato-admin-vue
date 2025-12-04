@@ -58,6 +58,8 @@ const onSubmit = form.handleSubmit(async (values) => {
     companyId: companyId.value ?? '',
   }
 
+  console.log('payload:', payload)
+
   isLoading.value = true
   const result = props.isEdit ? await updateStudent(payload) : await addStudent(payload)
   isLoading.value = false
@@ -102,7 +104,8 @@ const onDialogOpen = () => {
   if (props.student) {
     form.setValues({
       name: props.student.name,
-      email: props.student.email,
+      nickname: props.student.nickname,
+      email: props.student.email ?? '',
       birthDate: props.student.birthDate ?? '',
       address: props.student.address ?? '',
       phoneNumber: props.student.phoneNumber ?? '',
@@ -111,7 +114,9 @@ const onDialogOpen = () => {
   } else {
     form.setValues({
       name: '',
+      nickname: '',
       email: '',
+      birthplace: '',
       birthDate: '',
       address: '',
       phoneNumber: '',
@@ -142,6 +147,21 @@ const onDialogOpen = () => {
                   id="name"
                   type="name"
                   placeholder="Student Name"
+                  v-bind="componentField"
+                  required
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </FormField>
+          <FormField v-slot="{ componentField }" name="nickname">
+            <FormItem>
+              <FormLabel>Nickname</FormLabel>
+              <FormControl>
+                <Input
+                  id="name"
+                  type="name"
+                  placeholder="Student Nickname"
                   v-bind="componentField"
                   required
                 />
@@ -183,6 +203,20 @@ const onDialogOpen = () => {
               <FormMessage />
             </FormItem>
           </FormField>
+          <FormField v-slot="{ componentField }" name="birthplace">
+            <FormItem>
+              <FormLabel>Birth place</FormLabel>
+              <FormControl>
+                <Input
+                  id="birthplace"
+                  type="text"
+                  placeholder="Birth place"
+                  v-bind="componentField"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </FormField>
           <FormField v-slot="{ componentField }" name="address">
             <FormItem>
               <FormLabel>Home address</FormLabel>
@@ -207,7 +241,6 @@ const onDialogOpen = () => {
                   type="email"
                   placeholder="Student Email"
                   v-bind="componentField"
-                  required
                 />
               </FormControl>
               <FormMessage />
@@ -239,11 +272,12 @@ const onDialogOpen = () => {
         </div>
         <DialogFooter>
           <DialogClose as-child>
-            <Button type="submit" :disabled="isLoading">
-              <Loader2 v-if="isLoading" class="w-4 h-4 mr-2 animate-spin" />
-              {{ props.isEdit ? 'Update Student' : 'Add Student' }}
-            </Button>
+            <Button type="button" variant="outline">Cancel</Button>
           </DialogClose>
+          <Button type="submit" :disabled="isLoading">
+            <Loader2 v-if="isLoading" class="w-4 h-4 mr-2 animate-spin" />
+            {{ props.isEdit ? 'Update Student' : 'Add Student' }}
+          </Button>
         </DialogFooter>
       </form>
     </DialogContent>

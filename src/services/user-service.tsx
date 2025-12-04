@@ -297,7 +297,9 @@ export const getAdminList = async (): Promise<User[] | null> => {
 
 export const addStudent = async ({
   name,
+  nickname,
   email,
+  birthplace,
   birthDate,
   address,
   phoneNumber,
@@ -306,7 +308,9 @@ export const addStudent = async ({
   gradeId,
 }: {
   name: string
-  email: string
+  nickname?: string
+  email?: string
+  birthplace?: string
   birthDate: string
   address: string
   phoneNumber: string
@@ -317,7 +321,9 @@ export const addStudent = async ({
   try {
     const response = await axiosInstance.post('/admin/students', {
       name: name,
+      nickname: nickname,
       email: email,
+      birthplace: birthplace,
       birthDate: birthDate,
       address: address,
       phoneNumber: phoneNumber,
@@ -340,6 +346,8 @@ export const addStudent = async ({
 export const updateStudent = async ({
   studentId,
   name,
+  nickname,
+  birthplace,
   email,
   address,
   phoneNumber,
@@ -349,6 +357,8 @@ export const updateStudent = async ({
 }: {
   studentId: string
   name: string
+  nickname: string
+  birthplace: string
   email: string
   birthDate: string
   address: string
@@ -362,6 +372,8 @@ export const updateStudent = async ({
       '/admin/students/student/' + studentId,
       {
         name: name,
+        nickname: nickname,
+        birthplace: birthplace,
         email: email,
         address: address,
         phoneNumber: phoneNumber,

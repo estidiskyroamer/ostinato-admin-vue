@@ -28,8 +28,10 @@ export interface Teacher {
 export interface Student {
   id?: string
   userId: string
+  nickname?: string
   isActive: number
   address: string
+  birthplace?: string
   birthDate: string
   created_at?: Date
   deleted_at?: Date
@@ -41,9 +43,11 @@ export interface Student {
 export interface User {
   id?: string
   name: string
+  nickname?: string
   email: string
   phoneNumber: string
   address?: string
+  birthplace?: string
   birthDate?: string
   created_at?: Date
   deleted_at?: Date
