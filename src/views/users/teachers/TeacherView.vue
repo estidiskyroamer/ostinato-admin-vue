@@ -1,31 +1,21 @@
 <script setup lang="ts">
-import Header from '@/components/Header.vue'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import PageNavigation from '@/components/PageNavigation.vue'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import {
-  ChevronFirst,
-  ChevronLeft,
-  ChevronRight,
-  ChevronLast,
-  EllipsisVertical,
-} from 'lucide-vue-next'
-import { Teacher } from './Teacher'
-import { Plus } from 'lucide-vue-next'
-import PageNavigation from '@/components/PageNavigation.vue'
 import { FlexRender } from '@tanstack/vue-table'
-import { Loader2 } from 'lucide-vue-next'
+import { Loader2, Plus } from 'lucide-vue-next'
+import { Teacher } from './Teacher'
+import TeacherDialog from './dialogs/TeacherDialog.vue'
 
-const { table, columns, isLoading } = Teacher()
+const { table, isLoading, getTeachers } = Teacher()
 </script>
 
 <template>
@@ -36,7 +26,12 @@ const { table, columns, isLoading } = Teacher()
       :model-value="table.getColumn('name')?.getFilterValue() as string"
       @update:model-value="table.getColumn('name')?.setFilterValue($event)"
     />
-    <Button><Plus />New Teacher</Button>
+    <TeacherDialog :refresh="getTeachers"
+      ><Button>
+        <Plus />
+        New Teacher
+      </Button></TeacherDialog
+    >
   </div>
   <PageNavigation :table="table" />
   <Table>
